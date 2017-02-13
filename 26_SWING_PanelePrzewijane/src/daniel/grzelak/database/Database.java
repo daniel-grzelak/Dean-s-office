@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.sqlite.SQLiteConfig;
@@ -17,22 +18,22 @@ import daniel.grzelak.classes.University;
 import daniel.grzelak.classes.User;
 import daniel.grzelak.classes.Entry;
 
-
 public class Database {
 
 	private static String DRIVER = "org.sqlite.JDBC";
 	private static String DB = "jdbc:sqlite:Deansoffice.db";
 
-	private static Connection conn; 
-	private static Statement stat; 
+	private static Connection conn;
+	private static Statement stat;
+
 	public static void connect() {
 		try {
 			Class.forName(DRIVER);
 
 			SQLiteConfig conf = new SQLiteConfig();
 			conf.enforceForeignKeys(true);
-			conn = DriverManager.getConnection(DB, conf.toProperties()); 
-			stat = conn.createStatement(); 
+			conn = DriverManager.getConnection(DB, conf.toProperties());
+			stat = conn.createStatement();
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -59,8 +60,7 @@ public class Database {
 					+ "foreign key (idS) references Student(id) on delete cascade on update cascade, "
 					+ "foreign key (idU) references University(id) on delete cascade on update cascade " + " );";
 			String createTableUser = "create table if not exists User (id integer primary key autoincrement, "
-					+ "login varchar(50) not null,"
-					+ " password varchar(50) not null, "
+					+ "login varchar(50) not null," + " password varchar(50) not null, "
 					+ "role varchar(50) not null);";
 			stat.execute(createTableStudent);
 			stat.execute(createTableUniversity);
@@ -113,8 +113,6 @@ public class Database {
 		}
 
 	}
-	
-
 
 	public static void deleteStudent(int idx) {
 		try {
@@ -309,15 +307,14 @@ public class Database {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static void insertUser(User u) {
 
 		try {
-			String insertUser = "" + "insert into User " + "(login, password, role) "
-					+ "values " + "(?, ?, ?);";
+			String insertUser = "" + "insert into User " + "(login, password, role) " + "values " + "(?, ?, ?);";
 			PreparedStatement ps = conn.prepareStatement(insertUser);
 			ps.setString(1, u.getLogin());
-			ps.setString(2, u.getPassword());
+			ps.setString(2, u.encrypter(u.getPassword()));
 			ps.setString(3, u.getRole());
 			ps.execute();
 		} catch (SQLException e) {
@@ -325,7 +322,7 @@ public class Database {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static List<User> selectUser() {
 		try {
 			List<User> users = new ArrayList<>();
@@ -344,17 +341,17 @@ public class Database {
 			return null;
 		}
 	}
-	
+
 	public static boolean userMatcher(String login, String password) {
 		boolean ifUserExists = false;
 		try {
-			
+
 			String selectUser = "select * from User where login like ? and password like ?;";
 			PreparedStatement ps = conn.prepareStatement(selectUser);
 			ps.setString(1, login);
-			ps.setString(2, password);
+			ps.setString(2, User.encrypter(password));
 			ResultSet rs = ps.executeQuery();
-			
+
 			if (rs.next()) {
 				ifUserExists = true;
 			}
@@ -364,10 +361,9 @@ public class Database {
 			e.printStackTrace();
 			return ifUserExists;
 		}
-		
-			
+
 	}
-	
+
 	public static User selectUserByLoginAndPassword(String login, String password) {
 
 		try {
@@ -376,7 +372,7 @@ public class Database {
 			ps.setString(1, login);
 			ps.setString(2, password);
 			ResultSet rs = ps.executeQuery();
-			
+
 			if (rs.next()) {
 				return new User(rs.getInt("id"), rs.getString("login"), rs.getString("password"), rs.getString("role"));
 			}
@@ -386,16 +382,14 @@ public class Database {
 			e.printStackTrace();
 			return null;
 		}
-		
-		
+
 	}
-	
+
 	public static void updateUser(User u) {
 
 		PreparedStatement ps;
 		try {
-			String updateUser = "UPDATE User SET " + "login = ?, password = ?, role = ? "
-					+ "WHERE id = ?";
+			String updateUser = "UPDATE User SET " + "login = ?, password = ?, role = ? " + "WHERE id = ?";
 			ps = conn.prepareStatement(updateUser);
 			ps.setString(1, u.getLogin());
 			ps.setString(2, u.getPassword());
@@ -532,8 +526,8 @@ public class Database {
 		List<String> countingStudents = new ArrayList<>();
 
 		try {
-			String selectWpis = "select University.address, COUNT(DISTINCT Entry.idS) " + "FROM " + "Student INNER JOIN " + "Entry "
-					+ "ON Student.id = Entry.idS " + "INNER JOIN " + "University "
+			String selectWpis = "select University.address, COUNT(DISTINCT Entry.idS) " + "FROM "
+					+ "Student INNER JOIN " + "Entry " + "ON Student.id = Entry.idS " + "INNER JOIN " + "University "
 					+ "ON Entry.idU = University.id GROUP BY University.address;";
 			ResultSet rs = stat.executeQuery(selectWpis);
 			while (rs.next()) {
@@ -547,10 +541,10 @@ public class Database {
 		}
 
 	}
-	
+
 	public static List<Integer> ageList() {
 		List<Integer> ageList = new ArrayList<>();
-		
+
 		try {
 
 			String selectAge = "select distinct age from Student INNER JOIN Entry on Student.id = Entry.IdS "
@@ -565,12 +559,12 @@ public class Database {
 			e.printStackTrace();
 			return null;
 		}
-		
-	
-}
+
+	}
+
 	public static List<Integer> yearsList() {
 		List<Integer> yearsList = new ArrayList<>();
-		
+
 		try {
 
 			String selectYear = "select distinct studyYear from Student INNER JOIN Entry on Student.id = Entry.IdS "
@@ -585,10 +579,9 @@ public class Database {
 			e.printStackTrace();
 			return null;
 		}
-		
-	
-}
-	
+
+	}
+
 	public static List<String> namesList() {
 		List<String> namesList = new ArrayList<>();
 
@@ -608,7 +601,7 @@ public class Database {
 		}
 
 	}
-	
+
 	public static List<String> surnamesList() {
 		List<String> surnamesList = new ArrayList<>();
 
@@ -628,64 +621,53 @@ public class Database {
 		}
 
 	}
-	
-	public static List<StudentUniversity> downloadData(
-			boolean isNameChecked, List<String> names,
-			boolean isSurnameChecked, List<String> surnames,
-			boolean isAgeChecked, int ageFrom, int ageTo,
-			boolean isYearChecked, int yearFrom, int yearTo
-			) 
-	{
-		try
-		{
+
+
+
+	public static List<StudentUniversity> downloadData(boolean isNameChecked, List<String> names,
+			boolean isSurnameChecked, List<String> surnames, boolean isAgeChecked, int ageFrom, int ageTo,
+			boolean isYearChecked, int yearFrom, int yearTo) {
+		try {
 			String SQL = "select Entry.id, Student.name, Student.surname, Student.age, Student.studyYear, "
 					+ "Student.mail, Student.phone, University.name, University.address, University.mail, University.phone "
 					+ "FROM " + "Student INNER JOIN " + "Entry " + "ON Student.id = Entry.idS " + "INNER JOIN "
 					+ "University " + "ON Entry.idU = University.id WHERE 1 = 1";
-			
+
 			String namesFilter = "";
-			if (names != null && !names.isEmpty())
-			{
-				
+			if (names != null && !names.isEmpty()) {
+
 				namesFilter += " and Student.name IN ('" + String.join("','", names) + "') ";
 			}
-			
-			
+
 			String surnamesFilter = "";
-			if (surnames != null && !surnames.isEmpty())
-			{
-				
+			if (surnames != null && !surnames.isEmpty()) {
+
 				surnamesFilter += " and Student.surname IN ('" + String.join("','", surnames) + "') ";
 			}
-			
+
 			String agesFilter = " and Student.age BETWEEN " + ageFrom + " AND " + ageTo + " ";
 			String yearFilter = " and Student.studyYear BETWEEN " + yearFrom + " AND " + yearTo + " ";
-			
-			
-			if (isNameChecked)
-			{
+
+			if (isNameChecked) {
 				SQL += namesFilter;
 			}
-			if (isSurnameChecked)
-			{
+			if (isSurnameChecked) {
 				SQL += surnamesFilter;
 			}
-			if (isAgeChecked)
-			{
+			if (isAgeChecked) {
 				SQL += agesFilter;
 			}
-			if(isYearChecked)
-			{
+			if (isYearChecked) {
 				SQL += yearFilter;
 			}
 			SQL += ";";
-			
+
 			System.out.println(SQL);
-			
+
 			List<StudentUniversity> studentsUniversities = new ArrayList<>();
-			
+
 			ResultSet rs = stat.executeQuery(SQL);
-	
+
 			while (rs.next()) {
 				int id = rs.getInt(1);
 				String name = rs.getString(2);
@@ -702,12 +684,10 @@ public class Database {
 						address, mailU, phoneU));
 			}
 			return studentsUniversities;
-	} catch (SQLException e) {
+		} catch (SQLException e) {
 
-		e.printStackTrace();
-		return null;
-	}
+			e.printStackTrace();
+			return null;
+		}
 	}
 }
-
-

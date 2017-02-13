@@ -29,9 +29,6 @@ public class Main {
 		Database.connect();
 		Database.createTables();
 
-		  
-		 
-		  
 		 
 	
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -40,7 +37,6 @@ public class Main {
 			}
 		});
 
-		
 
 		
 
