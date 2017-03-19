@@ -92,8 +92,7 @@ public class PanelUniversity extends JPanel implements ActionListener {
 
 		JPanel panelMiddle = new JPanel(new GridBagLayout());
 		GridBagConstraints gbc2 = new GridBagConstraints();
-		gbc2.weightx = 1;
-		gbc2.weighty = 1;
+
 		
 		gbc2.gridx = 0;
 		gbc2.gridy = 0;

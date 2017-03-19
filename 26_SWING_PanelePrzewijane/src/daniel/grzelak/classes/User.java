@@ -109,7 +109,7 @@ public class User {
 				k++;
 			}
 		}
-		System.out.println(keyExit.toString());
+
 
 		StringBuilder passwordExit = new StringBuilder();
 		for (int i = 0; i < password.length(); i++) {
@@ -169,7 +169,7 @@ public class User {
 				k++;
 			}
 		}
-		System.out.println(keyExit.toString());
+
 
 		StringBuilder passwordExit = new StringBuilder();
 		for (int i = 0; i < password.length(); i++) {
